@@ -2,7 +2,7 @@
 import data from 'json!../../store_directory.json'
 
 console.log(data.items.length)
-let sliced1Data = data.items.slice(42, 50);
+let sliced1Data = data.items.slice(269, 273);
 console.log(sliced1Data)
 let newArray = []
 
