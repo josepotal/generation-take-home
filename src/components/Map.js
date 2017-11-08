@@ -1,14 +1,11 @@
 import React, { Component } from 'react';
 
-import stores from 'json!../../mini-store_directory.json'
-console.log(stores)
-//import data from '../utils/address-converter';
+import stores from 'json!../../coords_store_directory.json'
 
 export default class Map extends Component {
   constructor(){
     super()
     this.setMarkers = this.setMarkers.bind(this)
-    //this.geocodeAddress = this.geocodeAddress.bind(this)
   }
 
   componentDidMount() {
@@ -19,54 +16,49 @@ export default class Map extends Component {
     });
 
     this.setMarkers(this.map)
-
-    //this.geocoder = new google.maps.Geocoder();
-
-
-    //json.items.map((item)=>this.geocodeAddress(item, this.geocoder))
   }
 
   setMarkers = map => {
     stores.items.map(store => {
+      const image = 'http://maps.google.com/mapfiles/ms/icons/green-dot.png';
       if( store.loc.length > 0){
         const marker = new google.maps.Marker({
           position: {lat: store.loc[0], lng: store.loc[1]},
           map: map,
+          animation: google.maps.Animation.DROP,
           title: store.Name
         })
+
+        //on click add to my list
+        marker.addListener('click', () => {
+          this.props.handleAddFavs(store)
+          marker.setIcon(image)
+        });
+
+        var contentString = `
+          <div id="content">
+            <p>${marker.title}</p>
+            <p>${marker.position}</p>
+            <p>${store.Address}</p>
+          </div>`
+
+        //on Hover show info
+        const infowindow = new google.maps.InfoWindow({
+          content: contentString
+        });
+
+        marker.addListener('mouseover', function() {
+          infowindow.open(map, marker);
+        });
+        marker.addListener('mouseout', function() {
+          infowindow.close(map, marker);
+        });
       }
+
+
 
     })
   }
-
-
-//   geocodeAddress = (item, geocoder) => {
-//     var loc=[];
-//     geocoder.geocode({ 'address': item.Address }, (results, status) => {
-//     console.log(status, results)
-//
-//     if (status === google.maps.GeocoderStatus.OK) {
-//
-//       //this.map.setCenter(results[0].geometry.location);
-//       loc[0]=results[0].geometry.location.lat();
-//       loc[1]=results[0].geometry.location.lng();
-//       console.log(loc)
-//       //this.marker.setPosition(loc);
-//       const marker = new google.maps.Marker({
-//         position: {lat: loc[0], lng: loc[1]},
-//         map: this.map,
-//         title: item.Name
-//       })
-//       return;
-//     } else {
-//       if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
-//         console.log('exceeded')
-//       }
-//     }
-//
-//   })
-// }
-
 
   render() {
     return (
