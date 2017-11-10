@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
-import stores from 'json!../../coords_store_directory.json'
+import database from '../utils/databaseInit'
 
 export default class Map extends Component {
   constructor(){
@@ -19,57 +20,72 @@ export default class Map extends Component {
   }
 
   setMarkers = map => {
-    stores.items.map(store => {
-      const image = 'http://maps.google.com/mapfiles/ms/icons/green-dot.png';
-      if( store.loc.length > 0){
-        const marker = new google.maps.Marker({
-          position: {lat: store.loc[0], lng: store.loc[1]},
-          map: map,
-          animation: google.maps.Animation.DROP,
-          title: store.Name
-        })
+    database.ref('/stores').on('value', snap => {
+      const stores = snap.val()
+      const cleanStores = Object.values(stores)
 
-        //on click add to my list
-        marker.addListener('click', () => {
-          this.props.handleAddFavs(store)
-          marker.setIcon(image)
-        });
+      cleanStores.map((store, index) => {
+        const image = {
+          url: 'http://maps.gstatic.com/mapfiles/ms2/micons/blue.png',
+          scaledSize: new google.maps.Size(42, 42),
+          origin: new google.maps.Point(0, -6),
+          anchor: new google.maps.Point(0, 0)
+        }
+        const imageFav = {
+          url: 'http://maps.gstatic.com/mapfiles/ms2/micons/green.png',
+          scaledSize: new google.maps.Size(42, 42),
+          origin: new google.maps.Point(0, -6),
+          anchor: new google.maps.Point(0, 0)
+        }
 
-        var contentString = `
-          <div id="content">
-            <p>${marker.title}</p>
-            <p>${marker.position}</p>
-            <p>${store.Address}</p>
-          </div>`
+        let marker;
+        if (store.loc){
+          marker = new google.maps.Marker({
+            position: {lat: store.loc[0], lng: store.loc[1]},
+            map: map,
+            animation: google.maps.Animation.DROP,
+            title: store.Name,
+            label: store.id.toString(),
+            icon: image
+          })
 
-        //on Hover show info
-        const infowindow = new google.maps.InfoWindow({
-          content: contentString
-        });
+          //onClick add to my favorites list
+          marker.addListener('click', () => {
+            this.props.handleAddFavs(store)
+            marker.setIcon(imageFav)
+          });
 
-        marker.addListener('mouseover', function() {
-          infowindow.open(map, marker);
-        });
-        marker.addListener('mouseout', function() {
-          infowindow.close(map, marker);
-        });
-      }
+          var contentString = `
+            <div class="content">
+              <p>${store.id} | ${store.Name}</p>
+              <p>${store.Address}</p>
+            </div>`
 
+          //onHover show info
+          const infowindow = new google.maps.InfoWindow({
+            content: contentString
+          });
 
-
+          marker.addListener('mouseover', function() {
+            infowindow.open(map, marker);
+          });
+          marker.addListener('mouseout', function() {
+            infowindow.close(map, marker);
+          });
+        }
+      })
     })
   }
 
   render() {
     return (
-      <div>
-        <h1>Map</h1>
-        <div style={{width: 1000, height: 800, border: '1px solid black'}} ref="map"></div>
-      </div>
+      <div className="mapContainer" ref="map"></div>
     );
   }
 }
 
 Map.propTypes = {
-  initialPosition: React.PropTypes.object.isRequired
+  initialPosition: PropTypes.object.isRequired,
+  stores: PropTypes.array,
+  store: PropTypes.object
 };

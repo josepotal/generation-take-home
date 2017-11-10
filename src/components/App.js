@@ -6,25 +6,41 @@ import FavoritesList from './FavoritesList';
 
 export default class App extends Component {
 
-  //state
+  // initial state
   constructor(props) {
     super(props);
-    this.state = { favStores: [] };
+    this.state = {
+      favStores: [],
+      showFavs: false
+     };
     this.handleAddFavs = this.handleAddFavs.bind(this);
+    this.toggleFavsList = this.toggleFavsList.bind(this);
   }
 
   // function handle click update state
   handleAddFavs(store){
-    if (this.state.favStores.includes(store)) {
+    let { favStores } = this.state
+    let idsArray = []
+    favStores.map(store => idsArray.push(store.id))
+    if (idsArray.includes(store.id)) {
       return 'already added';
     }
-    const favStores = [...this.state.favStores, store];
+    favStores = [...favStores, store];
     this.setState({
       favStores
     });
   }
 
+  // function to show/hide list
+  toggleFavsList(){
+    const { showFavs } = this.state
+    this.setState({
+      showFavs: !showFavs
+    })
+  }
+
   render() {
+    const { favStores, showFavs } = this.state
     return (
       <div>
         {/* <h1>Hi! Welcome to the Generation take-home interview!</h1>
@@ -59,9 +75,12 @@ export default class App extends Component {
         <Map
           initialPosition={{lat: 19.43236, lng: -99.1332}}
           handleAddFavs={this.handleAddFavs}
+          favStores={favStores}
         />
         <FavoritesList
-          favStores={this.state.favStores}
+          favStores={favStores}
+          showFavs={showFavs}
+          toggleFavsList={this.toggleFavsList}
         />
       </div>
     );
