@@ -1,9 +1,7 @@
 /* populate Firebase DB with the json data with latitudes and longitudes*/
 
-import data from './store_directory.json'
+import data from 'json!./store_directory.json'
 import database from './databaseInit';
-
-const google = window.google
 
 // loop to get lat/long to every address (delay appplied to avoid query limit)
 let i = 0;
